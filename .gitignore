@@ -43,3 +43,6 @@ Thumbs.db
 # Test outputs
 *.xlsx
 test_output/
+.pytest_cache/
+.coverage
+htmlcov/
