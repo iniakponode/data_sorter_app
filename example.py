@@ -8,21 +8,63 @@ import sys
 from app import DataSorterApp
 import tkinter as tk
 
-# Sample data
-SAMPLE_DATA = """Name: John Doe
-CO-OP NAME: Alpha Co-op
-Member ID: 12345
-Email: john@example.com
+# Sample data with noise (realistic example)
+SAMPLE_DATA = """PERSONAL DATA OF COOPERATIVE OWNERS
 
-Name: Jane Smith
-CO-OP NAME: Alpha Co-op
-Member ID: 67890
-Email: jane@example.com
+NAME: GAD ELEMOKUMO
+CO-OP NAME: Bayelsa Farmers Union
+PHONE NO: 08037374009
+BANK NAME: FIRST BANK
+ACCT NO: 1000383461
+SEX: FEMALE
 
-Name: Bob Johnson
-CO-OP NAME: Beta Co-op
-Member ID: 11111
-Email: bob@example.com"""
+YOU JUST HAVE NOW TILL 3PM TOMORROW TO SEND YOUR DETAILS TO 08030822597 ON WHATSAPP OR SMS
+PLZ DON'T SEND TO OTHER NUMBERS
+
+PROTECTUS SECURITY INTERNATIONAL
+CEO NAME: EWA OBIA OMINI
+CO-OP NAME: Delta Agricultural Coop
+PHONE NO: 08035533020
+BANK NAME: GTB
+ACCT NO: 22281345092
+EMAIL: eomini51@gmail.com
+
+MAREWOMA COOPERATIVE SOCIETY IRRI. PERSONAL DATA OF COOPERATIVE OWNER.
+
+NAME: ODOGWA QUEEN ENIFOME
+CO-OP NAME: Marewoma Coop Society
+PHONE NO: 08138379531
+BANK NAME: ZENITH
+ACCT NO: 2191621677
+SEX: FEMALE
+
+ROYAL WOMEN FARMERS Cooperative SOCIETY LIMITED 
+
+CEO NAME: Prefa Oyinduobra Helen 
+CO-OP NAME: Royal Women Farmers
+Phone no: 08037806976
+Bank Name: U.B.A
+Acc No: 2151124183
+Sex: Female
+
+EVERGREEN AGRO MPCSL
+
+CEO NAME: KAYODE JANET NIKE
+CO-OP NAME: Evergreen Agro
+Phone no: 08140301646
+Bank Name: FIRST BANK
+Account no: 3053891740
+
+Please help me with the corrections sir 
+Thank you
+
+Ebieyerin(Angalabiri) M.P.C.S. LTD. 
+CEO: Agononama Priestley Beer
+CO-OP NAME: Ebieyerin Angalabiri
+Phone no: 08064300259
+Sex: Male
+Bank: Sterling
+ACCT No: 0023279323"""
 
 def main():
     """Demonstrate core functionality."""
@@ -38,19 +80,20 @@ def main():
     
     # Parse sample data
     print("\n1. Parsing sample data...")
-    records = app.parse_records(SAMPLE_DATA)
+    column_headers, records = app.parse_records(SAMPLE_DATA)
     print(f"   Found {len(records)} records")
+    print(f"   Column headers: {column_headers}")
     
     # Group by CO-OP NAME
     print("\n2. Grouping by CO-OP NAME...")
-    grouped = app.group_by_coop_name(records)
+    grouped = app.group_by_coop_name(column_headers, records)
     for coop_name, coop_records in grouped.items():
         print(f"   - {coop_name}: {len(coop_records)} record(s)")
     
     # Create Excel file
     print("\n3. Creating Excel file...")
     output_file = 'example_output.xlsx'
-    app.create_excel_file(grouped, output_file)
+    app.create_excel_file(column_headers, grouped, output_file)
     print(f"   Excel file created: {output_file}")
     
     print("\n" + "=" * 60)
