@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import scrolledtext, messagebox, filedialog
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 from collections import defaultdict
 
 
@@ -43,11 +44,43 @@ class DataSorterApp:
         self.text_area = scrolledtext.ScrolledText(
             self.root,
             width=90,
-            height=30,
+            height=25,  # Slightly smaller to make room for options
             font=("Courier", 9),
             wrap=tk.WORD
         )
         self.text_area.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+        
+        # Options frame
+        options_frame = tk.Frame(self.root)
+        options_frame.pack(pady=5)
+        
+        # Sheet organization option
+        self.single_sheet_var = tk.BooleanVar(value=False)  # Default to separate sheets
+        sheet_option_frame = tk.Frame(options_frame)
+        sheet_option_frame.pack(side=tk.LEFT, padx=20)
+        
+        tk.Label(sheet_option_frame, text="Output Format:", font=("Arial", 10, "bold")).pack(anchor="w")
+        
+        # Radio buttons for sheet organization
+        self.sheet_mode_var = tk.StringVar(value="separate")
+        
+        separate_radio = tk.Radiobutton(
+            sheet_option_frame,
+            text="Separate sheets by CO-OP NAME (recommended)",
+            variable=self.sheet_mode_var,
+            value="separate",
+            font=("Arial", 9)
+        )
+        separate_radio.pack(anchor="w")
+        
+        single_radio = tk.Radiobutton(
+            sheet_option_frame,
+            text="All records in one sheet",
+            variable=self.sheet_mode_var,
+            value="single",
+            font=("Arial", 9)
+        )
+        single_radio.pack(anchor="w")
         
         # Process button
         self.process_button = tk.Button(
@@ -421,6 +454,49 @@ class DataSorterApp:
         # Save the workbook
         workbook.save(filepath)
     
+    def create_single_sheet_excel(self, column_headers, all_records, filepath):
+        """
+        Create an Excel file with all records in a single sheet.
+        
+        Args:
+            column_headers (list): List of column header names
+            all_records (list): All records as a flat list
+            filepath (str): Path where Excel file should be saved
+        """
+        workbook = Workbook()
+        
+        # Use the default sheet or create one
+        if 'Sheet' in workbook.sheetnames:
+            sheet = workbook['Sheet']
+            sheet.title = "All Records"
+        else:
+            sheet = workbook.create_sheet(title="All Records")
+        
+        # Write header row
+        for col_idx, header in enumerate(column_headers, start=1):
+            cell = sheet.cell(row=1, column=col_idx, value=header)
+            # Make headers bold
+            cell.font = Font(bold=True)
+        
+        # Write data rows
+        for row_idx, record in enumerate(all_records, start=2):
+            for col_idx, value in enumerate(record, start=1):
+                if col_idx <= len(column_headers):  # Don't exceed column count
+                    sheet.cell(row=row_idx, column=col_idx, value=value)
+        
+        # Auto-adjust column widths
+        for col_idx, header in enumerate(column_headers, start=1):
+            max_length = len(str(header))
+            for record in all_records:
+                if col_idx - 1 < len(record):
+                    value = str(record[col_idx - 1])
+                    max_length = max(max_length, len(value))
+            adjusted_width = min(max_length + 2, 50)
+            sheet.column_dimensions[get_column_letter(col_idx)].width = adjusted_width
+        
+        # Save the workbook
+        workbook.save(filepath)
+    
     def process_data(self):
         """Process the input data and export to Excel."""
         # Get text from text area
@@ -442,12 +518,8 @@ class DataSorterApp:
                 messagebox.showwarning("No Headers", "No column headers found. First record must use KEY: VALUE format.")
                 return
             
-            # Group by CO-OP NAME
-            grouped_data = self.group_by_coop_name(column_headers, records)
-            
-            if not grouped_data:
-                messagebox.showwarning("No Data", "No records to process.")
-                return
+            # Check user's choice for sheet organization
+            sheet_mode = self.sheet_mode_var.get()
             
             # Ask user for save location
             filepath = filedialog.asksaveasfilename(
@@ -460,15 +532,35 @@ class DataSorterApp:
                 # User cancelled
                 return
             
-            # Create Excel file
-            self.create_excel_file(column_headers, grouped_data, filepath)
-            
-            # Show confirmation
-            messagebox.showinfo(
-                "Success",
-                f"Data successfully exported!\n\nFile saved to:\n{filepath}\n\n"
-                f"Created {len(grouped_data)} sheet(s) with {len(records)} total record(s)."
-            )
+            # Create Excel file based on user choice
+            if sheet_mode == "single":
+                # Single sheet - all records together
+                self.create_single_sheet_excel(column_headers, records, filepath)
+                
+                # Show confirmation
+                messagebox.showinfo(
+                    "Success",
+                    f"Data successfully exported to single sheet!\n\nFile saved to:\n{filepath}\n\n"
+                    f"Total records: {len(records)}\n"
+                    f"Columns: {len(column_headers)}"
+                )
+            else:
+                # Separate sheets by CO-OP NAME (default)
+                grouped_data = self.group_by_coop_name(column_headers, records)
+                
+                if not grouped_data:
+                    messagebox.showwarning("No Data", "No records to process.")
+                    return
+                
+                self.create_excel_file(column_headers, grouped_data, filepath)
+                
+                # Show confirmation
+                messagebox.showinfo(
+                    "Success",
+                    f"Data successfully exported to separate sheets!\n\nFile saved to:\n{filepath}\n\n"
+                    f"Created {len(grouped_data)} sheet(s) with {len(records)} total record(s).\n"
+                    f"Groups: {', '.join(grouped_data.keys())}"
+                )
             
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred:\n{str(e)}")

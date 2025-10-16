@@ -62,16 +62,47 @@ class SimpleDataSorterApp:
             self.root,
             wrap=tk.WORD,
             width=80,
-            height=25,
+            height=20,  # Slightly smaller to make room for options
             font=('Consolas', 9),
             bg='#f8f9fa',
             fg='#2c3e50'
         )
         self.text_area.grid(row=1, column=0, sticky='nsew', padx=10, pady=5)
         
+        # Options frame
+        options_frame = tk.Frame(self.root)
+        options_frame.grid(row=2, column=0, pady=5)
+        
+        # Sheet organization option
+        sheet_option_frame = tk.Frame(options_frame)
+        sheet_option_frame.pack(side=tk.LEFT, padx=20)
+        
+        tk.Label(sheet_option_frame, text="Output Format:", font=('Arial', 10, 'bold')).pack(anchor="w")
+        
+        # Radio buttons for sheet organization
+        self.sheet_mode_var = tk.StringVar(value="separate")
+        
+        separate_radio = tk.Radiobutton(
+            sheet_option_frame,
+            text="Separate sheets by CO-OP NAME",
+            variable=self.sheet_mode_var,
+            value="separate",
+            font=('Arial', 9)
+        )
+        separate_radio.pack(anchor="w")
+        
+        single_radio = tk.Radiobutton(
+            sheet_option_frame,
+            text="All records in one sheet",
+            variable=self.sheet_mode_var,
+            value="single",
+            font=('Arial', 9)
+        )
+        single_radio.pack(anchor="w")
+        
         # Button frame
         button_frame = tk.Frame(self.root)
-        button_frame.grid(row=2, column=0, pady=10)
+        button_frame.grid(row=3, column=0, pady=10)
         
         # Process button
         if OPENPYXL_AVAILABLE:
@@ -126,7 +157,7 @@ class SimpleDataSorterApp:
             font=('Arial', 9),
             fg='#7f8c8d'
         )
-        self.status_label.grid(row=3, column=0, pady=5)
+        self.status_label.grid(row=4, column=0, pady=5)
     
     def is_noise_line(self, line):
         """Check if a line is noise/irrelevant."""
@@ -297,6 +328,90 @@ class SimpleDataSorterApp:
         text_widget.insert("1.0", text)
         text_widget.config(state=tk.DISABLED)  # Make read-only
     
+    def create_single_sheet_excel(self, records, column_names, file_path):
+        """Create Excel file with all records in a single sheet."""
+        if not OPENPYXL_AVAILABLE or Workbook is None:
+            raise ImportError("openpyxl not available")
+            
+        workbook = Workbook()
+        
+        # Use the default sheet
+        sheet = workbook.active
+        sheet.title = "All Records"
+        
+        # Add headers
+        for col_idx, column_name in enumerate(column_names, 1):
+            cell = sheet.cell(row=1, column=col_idx, value=column_name)
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        # Add data
+        for row_idx, record in enumerate(records, 2):
+            for col_idx, column_name in enumerate(column_names, 1):
+                value = record.get(column_name, '')
+                sheet.cell(row=row_idx, column=col_idx, value=value)
+        
+        # Auto-adjust column widths
+        for column in sheet.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            sheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save the file
+        workbook.save(file_path)
+    
+    def create_multi_sheet_excel(self, groups, column_names, file_path):
+        """Create Excel file with separate sheets for each cooperative."""
+        if not OPENPYXL_AVAILABLE or Workbook is None:
+            raise ImportError("openpyxl not available")
+            
+        workbook = Workbook()
+        
+        # Remove default worksheet
+        if 'Sheet' in workbook.sheetnames:
+            workbook.remove(workbook['Sheet'])
+        
+        # Create sheets for each cooperative
+        for coop_name, coop_records in groups.items():
+            # Create safe sheet name
+            safe_name = ''.join(c for c in coop_name if c.isalnum() or c in ' -_')[:31]
+            worksheet = workbook.create_sheet(title=safe_name)
+            
+            # Add headers
+            for col_idx, column_name in enumerate(column_names, 1):
+                cell = worksheet.cell(row=1, column=col_idx, value=column_name)
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+            
+            # Add data
+            for row_idx, record in enumerate(coop_records, 2):
+                for col_idx, column_name in enumerate(column_names, 1):
+                    value = record.get(column_name, '')
+                    worksheet.cell(row=row_idx, column=col_idx, value=value)
+            
+            # Auto-adjust column widths
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = get_column_letter(column[0].column)
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = min(max_length + 2, 50)
+                worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save the file
+        workbook.save(file_path)
+    
     def process_and_export(self):
         """Process data and export to Excel."""
         if not OPENPYXL_AVAILABLE:
@@ -320,12 +435,6 @@ class SimpleDataSorterApp:
                 messagebox.showwarning("No Records", "No valid records found in the input data.")
                 return
             
-            # Group by cooperative
-            self.status_label.config(text="Grouping by cooperative...")
-            self.root.update()
-            
-            groups = self.group_by_coop(records)
-            
             # Ask for save location
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".xlsx",
@@ -337,66 +446,40 @@ class SimpleDataSorterApp:
                 self.status_label.config(text="Export cancelled.")
                 return
             
-            # Create Excel file
+            # Check user's choice for sheet organization
+            sheet_mode = self.sheet_mode_var.get()
+            
+            # Create Excel file based on user choice
             self.status_label.config(text="Creating Excel file...")
             self.root.update()
             
-            # Check if openpyxl components are available
-            if Workbook is None or Font is None or PatternFill is None or get_column_letter is None:
-                raise ImportError("openpyxl components not properly loaded")
-            
-            workbook = Workbook()
-            
-            # Remove default worksheet
-            if 'Sheet' in workbook.sheetnames:
-                workbook.remove(workbook['Sheet'])
-            
-            # Create sheets for each cooperative
-            for coop_name, coop_records in groups.items():
-                # Create safe sheet name
-                safe_name = ''.join(c for c in coop_name if c.isalnum() or c in ' -_')[:31]
-                worksheet = workbook.create_sheet(title=safe_name)
+            if sheet_mode == "single":
+                # Single sheet - all records together
+                self.create_single_sheet_excel(records, column_names, file_path)
                 
-                # Add headers
-                for col_idx, column_name in enumerate(column_names, 1):
-                    cell = worksheet.cell(row=1, column=col_idx, value=column_name)
-                    cell.font = Font(bold=True)
-                    cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+                success_msg = f"✅ Export completed successfully!\n\n"
+                success_msg += f"📁 File saved: {file_path}\n"
+                success_msg += f"📊 {len(records)} records in single sheet\n"
+                success_msg += f"📋 {len(column_names)} columns: {', '.join(column_names)}"
                 
-                # Add data
-                for row_idx, record in enumerate(coop_records, 2):
-                    for col_idx, column_name in enumerate(column_names, 1):
-                        value = record.get(column_name, '')
-                        worksheet.cell(row=row_idx, column=col_idx, value=value)
+                messagebox.showinfo("Export Successful", success_msg)
+                self.status_label.config(text=f"Export completed: {len(records)} records in single sheet")
+            else:
+                # Separate sheets by CO-OP NAME (default)
+                self.status_label.config(text="Grouping by cooperative...")
+                self.root.update()
                 
-                # Auto-adjust column widths
-                for column in worksheet.columns:
-                    max_length = 0
-                    column_letter = get_column_letter(column[0].column)
-                    for cell in column:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(str(cell.value))
-                        except:
-                            pass
-                    adjusted_width = min(max_length + 2, 50)
-                    worksheet.column_dimensions[column_letter].width = adjusted_width
-            
-            # Save the file
-            workbook.save(file_path)
-            
-            # Success message
-            total_records = len(records)
-            num_coops = len(groups)
-            
-            success_msg = f"✅ Export completed successfully!\n\n"
-            success_msg += f"📁 File saved: {file_path}\n"
-            success_msg += f"📊 {total_records} records processed\n"
-            success_msg += f"🏢 {num_coops} cooperative groups created\n"
-            success_msg += f"📋 {len(column_names)} columns: {', '.join(column_names)}"
-            
-            messagebox.showinfo("Export Successful", success_msg)
-            self.status_label.config(text=f"Export completed: {total_records} records, {num_coops} groups")
+                groups = self.group_by_coop(records)
+                self.create_multi_sheet_excel(groups, column_names, file_path)
+                
+                success_msg = f"✅ Export completed successfully!\n\n"
+                success_msg += f"📁 File saved: {file_path}\n"
+                success_msg += f"📊 {len(records)} records processed\n"
+                success_msg += f"🏢 {len(groups)} cooperative sheets created\n"
+                success_msg += f"📋 {len(column_names)} columns: {', '.join(column_names)}"
+                
+                messagebox.showinfo("Export Successful", success_msg)
+                self.status_label.config(text=f"Export completed: {len(records)} records, {len(groups)} groups")
             
         except ImportError as e:
             messagebox.showerror("Missing Dependencies", 
