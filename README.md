@@ -66,6 +66,43 @@ Each record is separated by a blank line. The application will group all records
 - Confirmation messages
 - Error handling
 
+## Application Interface
+
+The application window consists of:
+1. **Instructions Label** - Shows how to format input data
+2. **Text Area** - Large scrollable text field for pasting records
+3. **Process Button** - Green button to trigger data processing and export
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         Data Sorter Application                         │
+├─────────────────────────────────────────────────────────┤
+│ Paste records in KEY: VALUE format (separated by       │
+│ blank lines):                                           │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐│
+│ │                                                       ││
+│ │  Name: John Doe                                      ││
+│ │  CO-OP NAME: Alpha Co-op                            ││
+│ │  Member ID: 12345                                   ││
+│ │                                                       ││
+│ │  Name: Jane Smith                                   ││
+│ │  CO-OP NAME: Alpha Co-op                            ││
+│ │  Member ID: 67890                                   ││
+│ │                                                       ││
+│ │  Name: Bob Johnson                                  ││
+│ │  CO-OP NAME: Beta Co-op                             ││
+│ │  Member ID: 11111                                   ││
+│ │                                                       ││
+│ │                                                       ││
+│ └─────────────────────────────────────────────────────┘│
+│                                                         │
+│         ┌─────────────────────────────────┐            │
+│         │ Process and Export to Excel     │            │
+│         └─────────────────────────────────┘            │
+└─────────────────────────────────────────────────────────┘
+```
+
 ## Example
 
 Input:
