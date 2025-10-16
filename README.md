@@ -124,6 +124,27 @@ Output: An Excel file with two sheets:
 - "Alpha Co-op" sheet containing John Doe and Jane Smith's records
 - "Beta Co-op" sheet containing Bob Johnson's record
 
+## Testing
+
+The project includes a comprehensive test suite using pytest. To run the tests:
+
+1. Install test dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run the tests:
+```bash
+pytest test_app.py -v
+```
+
+The test suite covers:
+- Record parsing from text input
+- Grouping records by CO-OP NAME
+- Excel file creation with multiple sheets
+- Edge cases (empty input, missing fields, long names, etc.)
+- Integration testing of the complete workflow
+
 ## License
 
 This project is open source and available under the MIT License.
