@@ -1,4 +1,4 @@
-# GitHub Release Creation Guide for DataSorter v2.9.0
+# GitHub Release Creation Guide for SmartDataExtractor v2.9.0
 
 ## 🚀 How to Create a GitHub Release with Downloadable Exe
 
@@ -10,7 +10,7 @@
 ### Step 2: Configure the Release
 ```
 Tag version: v2.9.0 (already created and pushed)
-Release title: DataSorter v2.9.0 - Intelligent Orphaned Value Handling
+Release title: SmartDataExtractor v2.9.0 - Professional Intelligent Data Processing
 Target: main branch
 ```
 
@@ -18,21 +18,29 @@ Target: main branch
 Copy this description:
 
 ```markdown
-# 🧠 DataSorter v2.9.0 - Intelligent Orphaned Value Handling
+# 🧠 SmartDataExtractor v2.9.0 - Professional Edition
+
+## 🏢 Professional Rebranding
+**Developer**: Iniakpokeikiye Peter Thompson, CTO  
+**Company**: Ungozu and Son's Enterprises Limited  
+**Copyright**: © 2025 Ungozu and Son's Enterprises Limited
 
 ## 🎉 Major Breakthrough: Smart Orphaned Value Detection
 
 ### ✨ What's New
+- **Professional rebranding** with company attribution and developer information
 - **Intelligent field assignment** for values without explicit keys
 - **Automatic detection** of standalone values like "ZENITH BANK", "Male"
 - **7-priority assignment system** for optimal field mapping
 - **Advanced record reconstruction** with orphaned block merging
+- **Enhanced UI** with Help menu and About dialog
 
 ### 🔧 Key Features
 - **Content-based analysis** determines appropriate field assignment
 - **Context-aware mapping** prevents cross-contamination
 - **Enhanced pattern recognition** with validation filters
 - **Robust parsing** handles real-world messy data formats
+- **Professional branding** with company information and copyright
 
 ### 🐛 Major Fixes
 - ✅ Fixed "Male" appearing in BANK NAME column
@@ -46,17 +54,20 @@ Copy this description:
 - **Perfect record boundary detection** for complex layouts
 
 ### 💾 Download
-Download `DataSorter_v2.9.0.exe` below - no installation required!
+Download `SmartDataExtractor_v2.9.0.exe` below - no installation required!
 
 **System Requirements:**
 - Windows 7/8/10/11 (64-bit)
 - No additional software needed
+
+**About the Developer:**
+Built by Iniakpokeikiye Peter Thompson, Chief Technology Officer at Ungozu and Son's Enterprises Limited, this application represents cutting-edge intelligent data processing technology.
 ```
 
 ### Step 4: Attach the Executable
 1. **Drag and drop** or click "Attach binaries" 
-2. **Upload file:** `C:\Users\r02it21\Documents\data_sorter_app\dist\DataSorter_v2.9.0.exe`
-3. **Verify file size:** ~27MB (normal for bundled Python app)
+2. **Upload file:** `C:\Users\r02it21\Documents\data_sorter_app\dist\SmartDataExtractor_v2.9.0.exe`
+3. **Verify file size:** ~27.8MB (normal for bundled Python app)
 
 ### Step 5: Publish
 1. ✅ Check **"Set as the latest release"**
@@ -66,11 +77,12 @@ Download `DataSorter_v2.9.0.exe` below - no installation required!
 
 After publishing, users can:
 1. **Visit:** `https://github.com/iniakponode/data_sorter_app/releases`
-2. **Download:** `DataSorter_v2.9.0.exe` directly
+2. **Download:** `SmartDataExtractor_v2.9.0.exe` directly
 3. **Run immediately** - no installation required
+4. **Access Help → About** to see developer and company information
 
 ## 🔗 Direct Download Link
-After release creation: `https://github.com/iniakponode/data_sorter_app/releases/download/v2.9.0/DataSorter_v2.9.0.exe`
+After release creation: `https://github.com/iniakponode/data_sorter_app/releases/download/v2.9.0/SmartDataExtractor_v2.9.0.exe`
 
 ---
 
