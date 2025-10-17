@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-Data Sorter Application
-A Tkinter-based desktop application that parses structured text records,
-groups them by CO-OP NAME, and exports to a multi-sheet Excel file.
+SmartDataExtractor Application
+A Tkinter-based desktop application that intelligently parses unstructured text data,
+extracts key-value pairs, handles orphaned values, and exports to structured Excel files.
+
+Developer: Iniakpokeikiye Peter Thompson, CTO
+Company: Ungozu and Son's Enterprises Limited
+Version: 2.9.0
+Copyright (c) 2025 Ungozu and Son's Enterprises Limited
 """
 
 import tkinter as tk
@@ -23,8 +28,8 @@ except ImportError:
     PyPDF2 = None
 
 
-class DataSorterApp:
-    """Main application class for the Data Sorter."""
+class SmartDataExtractorApp:
+    """Main application class for the SmartDataExtractor."""
     
     def __init__(self, root):
         """Initialize the application UI."""
@@ -50,10 +55,43 @@ class DataSorterApp:
         
         # Create UI elements only if root is provided
         if self.root:
-            self.root.title("Data Sorter Application v2.9.0 - Intelligent Orphaned Value Handling")
+            self.root.title("SmartDataExtractor v2.9.0 - by Ungozu and Son's Enterprises")
             self.root.geometry("900x700")
+            self.create_menu()
             self.create_widgets()
     
+    def create_menu(self):
+        """Create the application menu bar."""
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # Help menu
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About", command=self.show_about)
+    
+    def show_about(self):
+        """Show application about dialog."""
+        about_text = """SmartDataExtractor v2.9.0
+
+Intelligent Data Processing Application
+
+Developer: Iniakpokeikiye Peter Thompson
+Title: Chief Technology Officer (CTO)
+Company: Ungozu and Son's Enterprises Limited
+
+Features:
+• Intelligent parsing of unstructured text data
+• Smart orphaned value detection and assignment
+• Advanced pattern recognition with 7-priority system
+• Export to structured Excel files
+• Support for Word and PDF file uploads
+
+Copyright © 2025 Ungozu and Son's Enterprises Limited
+All rights reserved."""
+        
+        messagebox.showinfo("About SmartDataExtractor", about_text)
+
     def create_widgets(self):
         """Create and layout UI widgets with enhanced features."""
         # Create main notebook for tabs
@@ -1922,7 +1960,7 @@ class DataSorterApp:
 def main():
     """Main entry point for the application."""
     root = tk.Tk()
-    app = DataSorterApp(root)
+    app = SmartDataExtractorApp(root)
     root.mainloop()
 
 
